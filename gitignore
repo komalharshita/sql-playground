@@ -1,0 +1,49 @@
+# === OS FILES ===
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# === EDITOR & IDE ===
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*.swo
+*~
+
+# === LOGS ===
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === NODE (if any tooling is ever added) ===
+node_modules/
+package-lock.json
+yarn.lock
+.npm
+
+# === BUILD OUTPUT (if any tooling is ever added) ===
+dist/
+build/
+out/
+
+# === ENVIRONMENT ===
+.env
+.env.local
+.env.*.local
+
+# === MISC ===
+*.bak
+*.tmp
+*.orig
+.cache/

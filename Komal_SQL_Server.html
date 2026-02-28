@@ -716,7 +716,7 @@
         desc: "Group & aggregate",
         note: "Groups rows by a column, then aggregates each group.",
         snippets: [
-          { label: "By department", sql: "SELECT department,\n  COUNT(*) AS count,\n  AVG(gpa) AS avg_gpa\nFROM students\nGROUP BY department\nORDER BY avg_gpa DESC;" },
+          { label: "By department", sql: "SELECT department,\n  COUNT(*) AS counts,\n  AVG(gpa) AS avg_gpa\nFROM students\nGROUP BY department\nORDER BY avg_gpa DESC;" },
         ]
       },
       {
@@ -896,7 +896,7 @@
             <div className="topbar-center">
               <div className="status-pill">
                 <span className="dot-live"></span>
-                students_db · 12 records
+                students_db · 50 records
               </div>
               <div className="status-pill">
                 <i className="fa-solid fa-lock" style={{color:'var(--pink-acc)', fontSize:'9px'}}></i>
@@ -916,13 +916,13 @@
 
               {/* GitHub */}
               <a
-                href="https://github.com/komal"
+                href="https://github.com/komalharshita"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="gh-btn"
               >
                 <i className="fa-brands fa-github" style={{fontSize:'14px'}}></i>
-                komal
+                komalharshita
               </a>
             </div>
           </div>
@@ -1040,7 +1040,7 @@
           {/* ── BOTTOM STRIP ── */}
           <div id="bottom">
             <span>table: students · student_id, name, department, year, gpa, attendance, status, grade, credits, fee_status</span>
-            <span className="credit">Built by Komal · SQL Learning Terminal</span>
+            <span className="credit">SQL Learning Terminal</span>
             <span>read-only · v2.0</span>
           </div>
         </div>

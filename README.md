@@ -165,14 +165,11 @@ sql-playground/
 ├── 📁 docs/
 │   ├── 📄 USAGE.md               ← Detailed usage guide
 │   ├── 📄 SQL_REFERENCE.md       ← Full SQL syntax reference
-│   └── 📁 assets/
-│       └── 🖼️  preview.png        ← Screenshot for README
-│
+│     
 └── 📁 .github/
     ├── 📄 PULL_REQUEST_TEMPLATE.md
-    └── 📁 ISSUE_TEMPLATE/
-        ├── 📄 bug_report.md
-        └── 📄 feature_request.md
+
+
 ```
 
 ---

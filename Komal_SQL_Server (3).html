@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Komal's SQL Playground</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Fira+Code:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alasql@1.7.3/dist/alasql.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ═══════════════════════════════════════
+       DARK THEME  (default)
+    ═══════════════════════════════════════ */
+    :root,
+    [data-theme="dark"] {
+      --bg:            #0a0a0f;
+      --surface:       #14141c;
+      --surface2:      #1a1a26;
+      --surface3:      #0d0d16;
+      --border:        rgba(255, 46, 147, 0.18);
+      --border2:       rgba(255,255,255,0.06);
+      --border3:       rgba(255, 46, 147, 0.28);
+
+      --pink:          #ff2e93;
+      --pink-acc:      #ff7ab8;
+      --pink-lt:       #ffc1e3;
+      --pink-dim:      rgba(255, 46, 147, 0.12);
+      --pink-glow:     rgba(255, 46, 147, 0.22);
+
+      --emerald:       #34d399;
+      --red:           #f87171;
+      --amber:         #fbbf24;
+
+      --text:          #f0e6f0;
+      --text2:         #d4bfd4;
+      --muted:         #5e4e5e;
+      --muted2:        #b8a9c9;
+      --code-fg:       #f8d0e8;
+
+      --topbar-bg:     rgba(10,10,15,0.94);
+      --panel-bar-bg:  rgba(255,255,255,0.025);
+      --results-head:  rgba(0,0,0,0.32);
+      --table-hover:   rgba(255,46,147,0.07);
+      --editor-bg:     #0d0d16;
+      --snippet-bg:    rgba(10,10,15,0.92);
+
+      --shadow-pink:   0 4px 22px rgba(255,46,147,0.30);
+      --shadow-sm:     0 2px 12px rgba(0,0,0,0.4);
+
+      --scrollbar-thumb: rgba(255,46,147,0.32);
+      --scrollbar-hover: rgba(255,46,147,0.55);
+
+      --resize-handle: rgba(255,46,147,0.18);
+      --resize-hover:  rgba(255,46,147,0.55);
+
+      /* noise on top of bg in dark */
+      --noise-opacity: 0.4;
+    }
+
+    /* ═══════════════════════════════════════
+       LIGHT THEME
+    ═══════════════════════════════════════ */
+    [data-theme="light"] {
+      --bg:            #fff5fa;
+      --surface:       #ffffff;
+      --surface2:      #fef0f7;
+      --surface3:      #fce8f3;
+      --border:        rgba(224, 0, 110, 0.16);
+      --border2:       rgba(224, 0, 110, 0.10);
+      --border3:       rgba(224, 0, 110, 0.30);
+
+      --pink:          #d4006b;
+      --pink-acc:      #e8559a;
+      --pink-lt:       #b5005a;
+      --pink-dim:      rgba(212, 0, 107, 0.08);
+      --pink-glow:     rgba(212, 0, 107, 0.14);
+
+      --emerald:       #059669;
+      --red:           #dc2626;
+      --amber:         #b45309;
+
+      --text:          #1a0810;
+      --text2:         #3d1a2e;
+      --muted:         #b08090;
+      --muted2:        #7a4560;
+      --code-fg:       #7a0045;
+
+      --topbar-bg:     rgba(255,245,250,0.96);
+      --panel-bar-bg:  rgba(212,0,107,0.04);
+      --results-head:  rgba(255,240,248,0.95);
+      --table-hover:   rgba(212,0,107,0.05);
+      --editor-bg:     #fdf4f9;
+      --snippet-bg:    rgba(255,245,250,0.95);
+
+      --shadow-pink:   0 4px 22px rgba(212,0,107,0.18);
+      --shadow-sm:     0 2px 12px rgba(0,0,0,0.08);
+
+      --scrollbar-thumb: rgba(212,0,107,0.28);
+      --scrollbar-hover: rgba(212,0,107,0.5);
+
+      --resize-handle: rgba(212,0,107,0.16);
+      --resize-hover:  rgba(212,0,107,0.45);
+
+      --noise-opacity: 0;
+    }
+
+    /* ═══════════════════════════════════════
+       BASE
+    ═══════════════════════════════════════ */
+    html, body, #root {
+      height: 100%; width: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      transition: background 0.28s ease, color 0.28s ease;
+    }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); }
+
+    /* noise grain */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: var(--noise-opacity);
+      transition: opacity 0.3s;
+    }
+
+    /* ambient glows */
+    .glow-tl {
+      position: fixed; top: -130px; left: -130px;
+      width: 440px; height: 440px;
+      background: radial-gradient(circle, var(--pink-glow) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+      transition: background 0.3s;
+    }
+    .glow-br {
+      position: fixed; bottom: -100px; right: -80px;
+      width: 380px; height: 380px;
+      background: radial-gradient(circle, rgba(255,122,184,0.10) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+      transition: background 0.3s;
+    }
+
+    /* ═══════════════════════════════════════
+       SHELL / LAYOUT
+    ═══════════════════════════════════════ */
+    #shell {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column;
+      height: 100%; width: 100%;
+    }
+
+    /* ═══════════════════════════════════════
+       TOPBAR
+    ═══════════════════════════════════════ */
+    #topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      height: 56px;
+      background: var(--topbar-bg);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(14px);
+      flex-shrink: 0;
+      transition: background 0.28s, border-color 0.28s;
+      z-index: 100;
+    }
+
+    .topbar-logo { display: flex; align-items: center; gap: 10px; }
+    .logo-icon {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: linear-gradient(135deg, var(--pink), var(--pink-acc));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; color: #fff;
+      box-shadow: var(--shadow-pink);
+      flex-shrink: 0;
+      transition: box-shadow 0.28s;
+    }
+    .logo-text { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; transition: color 0.28s; }
+    .logo-text span {
+      background: linear-gradient(90deg, var(--pink), var(--pink-acc));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .topbar-center { display: flex; align-items: center; gap: 20px; }
+    .status-pill {
+      display: flex; align-items: center; gap: 6px;
+      font-family: 'Fira Code', monospace; font-size: 10.5px;
+      color: var(--muted2); letter-spacing: 0.04em;
+      transition: color 0.28s;
+    }
+    .dot-live {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--emerald);
+      animation: blink 2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+    /* ── Theme toggle ── */
+    .theme-toggle {
+      display: flex; align-items: center; justify-content: center;
+      width: 34px; height: 34px; border-radius: 9px;
+      border: 1px solid var(--border3);
+      background: var(--pink-dim);
+      color: var(--pink);
+      cursor: pointer; font-size: 14px;
+      transition: all 0.22s;
+      flex-shrink: 0;
+    }
+    .theme-toggle:hover {
+      background: rgba(255,46,147,0.2);
+      box-shadow: 0 0 14px var(--pink-glow);
+      transform: rotate(20deg) scale(1.08);
+    }
+
+    /* ── GitHub button ── */
+    .gh-btn {
+      display: flex; align-items: center; gap: 7px;
+      padding: 5px 13px; border-radius: 8px;
+      border: 1px solid var(--border3);
+      background: var(--pink-dim);
+      color: var(--pink-acc);
+      font-family: 'Fira Code', monospace; font-size: 11px; font-weight: 500;
+      text-decoration: none; letter-spacing: 0.03em;
+      transition: all 0.2s;
+    }
+    .gh-btn:hover {
+      background: rgba(255,46,147,0.18);
+      border-color: var(--pink-acc);
+      color: var(--text);
+      box-shadow: 0 0 14px var(--pink-glow);
+      transform: translateY(-1px);
+    }
+
+    /* ═══════════════════════════════════════
+       BODY  (sidebar + main)
+    ═══════════════════════════════════════ */
+    #body { display: flex; flex: 1; overflow: hidden; position: relative; }
+
+    /* ═══════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════ */
+    #sidebar {
+      /* width is set inline via React state */
+      min-width: 180px; max-width: 480px;
+      flex-shrink: 0;
+      display: flex; flex-direction: column;
+      background: var(--surface);
+      overflow: hidden;
+      position: relative;
+      transition: background 0.28s;
+      /* no border-right here — handled by resize handle */
+    }
+
+    /* drag resize handle */
+    #resize-handle {
+      position: absolute; top: 0; right: 0;
+      width: 5px; height: 100%;
+      cursor: col-resize;
+      background: var(--resize-handle);
+      transition: background 0.2s, width 0.15s;
+      z-index: 10;
+    }
+    #resize-handle:hover,
+    #resize-handle.dragging {
+      background: var(--pink);
+      width: 3px;
+      box-shadow: 0 0 8px var(--pink-glow);
+    }
+
+    .sidebar-head {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border2);
+      flex-shrink: 0;
+      transition: border-color 0.28s;
+    }
+    .sidebar-head h2 {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.13em;
+      color: var(--muted); text-transform: uppercase;
+      transition: color 0.28s;
+    }
+    .sidebar-head p {
+      font-size: 10.5px; color: var(--muted2); margin-top: 3px;
+      font-family: 'Fira Code', monospace;
+      transition: color 0.28s;
+    }
+
+    #cheat-list {
+      flex: 1; overflow-y: auto;
+      padding: 10px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+
+    /* ── Cheat cards ── */
+    .cheat-card {
+      border-radius: 9px;
+      border: 1px solid var(--border2);
+      background: rgba(255,255,255,0.015);
+      overflow: hidden;
+      transition: border-color 0.2s, background 0.28s;
+    }
+    [data-theme="light"] .cheat-card { background: rgba(0,0,0,0.015); }
+    .cheat-card:hover { border-color: var(--border3); }
+    .cheat-card.open  { border-color: var(--border3); background: var(--pink-dim); }
+
+    .cheat-trigger {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 12px; cursor: pointer; user-select: none;
+    }
+    .cheat-trigger-left { display: flex; align-items: center; gap: 8px; }
+
+    .kw-badge {
+      font-family: 'Fira Code', monospace; font-size: 10.5px; font-weight: 600;
+      padding: 2px 7px; border-radius: 4px;
+      background: var(--pink-dim);
+      color: var(--pink); letter-spacing: 0.02em;
+      white-space: nowrap;
+      transition: background 0.28s, color 0.28s;
+    }
+    .cheat-desc { font-size: 10.5px; color: var(--muted2); transition: color 0.28s; }
+    .cheat-arrow { font-size: 9px; color: var(--muted); transition: transform 0.22s, color 0.28s; }
+    .cheat-card.open .cheat-arrow { transform: rotate(90deg); color: var(--pink-acc); }
+
+    .cheat-body {
+      display: none; padding: 0 10px 10px;
+      flex-direction: column; gap: 6px;
+    }
+    .cheat-card.open .cheat-body { display: flex; }
+
+    .cheat-note {
+      font-size: 10.5px; color: var(--muted2); line-height: 1.55; padding: 0 2px;
+      transition: color 0.28s;
+    }
+    .cheat-snippet {
+      font-family: 'Fira Code', monospace; font-size: 10.5px;
+      background: var(--snippet-bg);
+      border: 1px solid rgba(255,46,147,0.18);
+      border-radius: 6px; padding: 8px 10px;
+      color: var(--code-fg); white-space: pre; line-height: 1.6;
+      cursor: pointer; position: relative; transition: all 0.18s;
+      overflow-x: auto;
+    }
+    .cheat-snippet:hover {
+      border-color: var(--pink);
+      background: var(--pink-dim);
+      color: var(--text);
+      box-shadow: 0 0 0 2px var(--pink-glow);
+    }
+    .cheat-snippet::after {
+      content: 'load ↑';
+      position: absolute; right: 8px; top: 6px;
+      font-size: 9px; color: var(--pink); opacity: 0;
+      transition: opacity 0.18s;
+      font-family: 'Syne', sans-serif; letter-spacing: 0.05em; font-weight: 600;
+    }
+    .cheat-snippet:hover::after { opacity: 1; }
+
+    /* ═══════════════════════════════════════
+       MAIN WORKSPACE
+    ═══════════════════════════════════════ */
+    #main {
+      flex: 1; display: flex; flex-direction: column;
+      overflow: hidden; padding: 14px 16px; gap: 12px;
+    }
+
+    /* ── panel shared ── */
+    .ws-panel {
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      overflow: hidden;
+      transition: background 0.28s, border-color 0.28s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .panel-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 14px;
+      background: var(--panel-bar-bg);
+      border-bottom: 1px solid var(--border2);
+      flex-shrink: 0;
+      transition: background 0.28s, border-color 0.28s;
+    }
+    .panel-bar-left { display: flex; align-items: center; gap: 10px; }
+
+    .mac-dots { display: flex; gap: 5px; }
+    .mac-dots span { width: 10px; height: 10px; border-radius: 50%; }
+    .mac-dots .r { background: #ff5f57; opacity: 0.65; }
+    .mac-dots .y { background: #febc2e; opacity: 0.65; }
+    .mac-dots .g { background: #28c840; opacity: 0.65; }
+
+    .file-name {
+      font-family: 'Fira Code', monospace; font-size: 11px;
+      color: var(--muted2);
+      transition: color 0.28s;
+    }
+
+    /* ── Run button ── */
+    .run-btn {
+      display: flex; align-items: center; gap: 7px;
+      padding: 6px 18px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--pink) 0%, var(--pink-acc) 100%);
+      color: #fff; border: none; cursor: pointer;
+      font-family: 'Syne', sans-serif; font-size: 11.5px; font-weight: 700;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      transition: all 0.18s;
+      box-shadow: var(--shadow-pink);
+    }
+    .run-btn:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 26px rgba(255,46,147,0.45); }
+    .run-btn:active { transform: translateY(0); }
+
+    /* ── Editor ── */
+    #editor-panel { flex-shrink: 0; height: 42%; min-height: 200px; }
+
+    .editor-wrap { position: relative; flex: 1; display: flex; overflow: hidden; }
+
+    .line-nums {
+      padding: 14px 6px 14px 10px;
+      font-family: 'Fira Code', monospace; font-size: 12px;
+      color: var(--muted); line-height: 1.7;
+      text-align: right; user-select: none;
+      background: rgba(0,0,0,0.10);
+      border-right: 1px solid var(--border2);
+      min-width: 36px; overflow: hidden;
+      transition: color 0.28s, background 0.28s;
+    }
+    [data-theme="light"] .line-nums { background: rgba(212,0,107,0.03); }
+
+    #query-input {
+      flex: 1; padding: 14px 14px 32px 12px;
+      font-family: 'Fira Code', monospace; font-size: 13px; line-height: 1.7;
+      color: var(--code-fg);
+      background: var(--editor-bg);
+      border: none; outline: none; resize: none;
+      caret-color: var(--pink);
+      transition: background 0.28s, color 0.28s;
+    }
+    .editor-hint {
+      position: absolute; bottom: 8px; right: 12px;
+      font-family: 'Fira Code', monospace; font-size: 9.5px;
+      color: var(--muted); letter-spacing: 0.06em;
+      pointer-events: none; user-select: none;
+      transition: color 0.28s;
+    }
+
+    /* ── Results ── */
+    #results-panel { flex: 1; display: flex; flex-direction: column; }
+
+    .results-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 14px;
+    }
+    .results-label {
+      font-family: 'Fira Code', monospace; font-size: 11px;
+      color: var(--pink-acc); font-weight: 600; letter-spacing: 0.06em;
+      display: flex; align-items: center; gap: 7px;
+      transition: color 0.28s;
+    }
+
+    .row-badge {
+      font-family: 'Fira Code', monospace; font-size: 10px;
+      padding: 3px 10px; border-radius: 20px;
+      border: 1px solid; font-weight: 500;
+      transition: all 0.28s;
+    }
+    .row-badge.ok     { border-color: rgba(52,211,153,0.38); background: rgba(52,211,153,0.08); color: var(--emerald); }
+    .row-badge.err    { border-color: rgba(248,113,113,0.38); background: rgba(248,113,113,0.08); color: var(--red); }
+    .row-badge.empty  { border-color: var(--border2); background: transparent; color: var(--muted); }
+
+    #results-body { flex: 1; overflow: auto; }
+
+    .empty-state {
+      height: 100%; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: var(--muted); font-family: 'Fira Code', monospace; font-size: 12px; gap: 10px;
+    }
+    .empty-state i { font-size: 28px; opacity: 0.22; }
+
+    .error-state {
+      height: 100%; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px; text-align: center; gap: 10px;
+    }
+    .error-state i { font-size: 28px; color: var(--red); opacity: 0.5; }
+    .error-msg {
+      font-family: 'Fira Code', monospace; font-size: 11.5px; color: var(--red);
+      background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.2);
+      border-radius: 8px; padding: 10px 18px; max-width: 520px; line-height: 1.6;
+    }
+
+    /* ── Results table ── */
+    .result-table { width: 100%; border-collapse: collapse; }
+
+    .result-table thead tr {
+      background: var(--results-head);
+      position: sticky; top: 0; z-index: 2;
+      transition: background 0.28s;
+    }
+    .result-table th {
+      padding: 9px 14px; text-align: left;
+      font-family: 'Fira Code', monospace; font-size: 10px;
+      color: var(--pink); text-transform: uppercase;
+      letter-spacing: 0.1em; border-bottom: 1px solid var(--border);
+      white-space: nowrap; font-weight: 600;
+      transition: color 0.28s, border-color 0.28s;
+    }
+    .result-table tbody tr {
+      transition: background 0.12s;
+      border-bottom: 1px solid var(--border2);
+    }
+    .result-table tbody tr:hover { background: var(--table-hover); }
+    .result-table td {
+      padding: 8px 14px;
+      font-family: 'Fira Code', monospace; font-size: 12px;
+      color: var(--text2); white-space: nowrap;
+      transition: color 0.28s;
+    }
+    .result-table td.is-num       { color: var(--amber); text-align: right; }
+    .result-table td.is-active    { color: var(--emerald); font-weight: 500; }
+    .result-table td.is-probation { color: var(--red); font-weight: 500; }
+    .result-table td.is-paid      { color: var(--emerald); font-weight: 500; }
+    .result-table td.is-pending   { color: var(--amber); font-weight: 500; }
+    .result-table td.is-waived    { color: var(--pink-acc); font-weight: 500; }
+    .result-table td.is-grade-a   { color: var(--emerald); font-weight: 600; }
+    .result-table td.is-grade-b   { color: var(--pink-acc); font-weight: 500; }
+    .result-table td.is-grade-c   { color: var(--amber); font-weight: 500; }
+    .result-table td.is-grade-df  { color: var(--red); font-weight: 500; }
+    .result-table td.is-str       { color: var(--text2); }
+
+    /* ═══════════════════════════════════════
+       BOTTOM STRIP
+    ═══════════════════════════════════════ */
+    #bottom {
+      flex-shrink: 0; height: 30px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      background: var(--topbar-bg);
+      border-top: 1px solid var(--border2);
+      font-family: 'Fira Code', monospace; font-size: 9.5px; color: var(--muted);
+      letter-spacing: 0.07em;
+      transition: background 0.28s, border-color 0.28s, color 0.28s;
+      backdrop-filter: blur(14px);
+    }
+    #bottom .credit {
+      background: linear-gradient(90deg, var(--pink), var(--pink-acc));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      font-weight: 500;
+    }
+
+    /* ═══════════════════════════════════════
+       ANIMATIONS
+    ═══════════════════════════════════════ */
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(6px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.3s ease forwards; }
+
+    /* theme transition overlay — subtle flash */
+    .theme-flash {
+      position: fixed; inset: 0; z-index: 9999;
+      pointer-events: none;
+      background: var(--pink);
+      opacity: 0;
+      transition: opacity 0.12s;
+    }
+    .theme-flash.active { opacity: 0.04; }
+
+    /* prevent text selection while dragging sidebar */
+    body.resizing { user-select: none; cursor: col-resize !important; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <div class="theme-flash" id="theme-flash"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    /* ── DB SETUP ── */
+    const STUDENTS = [
+      { student_id:1001, name:"Aarav Sharma",      department:"Computer Science",    year:3, gpa:3.9,  attendance:95, status:"Active",       grade:"A+", credits:92,  fee_status:"Paid"    },
+      { student_id:1002, name:"Priya Mehta",        department:"Data Science",        year:2, gpa:3.7,  attendance:88, status:"Active",       grade:"A",  credits:64,  fee_status:"Paid"    },
+      { student_id:1003, name:"Riya Patel",         department:"Mathematics",         year:4, gpa:3.5,  attendance:72, status:"Active",       grade:"B+", credits:118, fee_status:"Paid"    },
+      { student_id:1004, name:"Dev Joshi",          department:"Computer Science",    year:1, gpa:2.9,  attendance:65, status:"On Probation", grade:"C",  credits:22,  fee_status:"Pending" },
+      { student_id:1005, name:"Sneha Iyer",         department:"Physics",             year:3, gpa:3.8,  attendance:91, status:"Active",       grade:"A",  credits:88,  fee_status:"Paid"    },
+      { student_id:1006, name:"Rohan Verma",        department:"Data Science",        year:2, gpa:2.4,  attendance:58, status:"On Probation", grade:"D",  credits:48,  fee_status:"Pending" },
+      { student_id:1007, name:"Ananya Rao",         department:"Computer Science",    year:4, gpa:4.0,  attendance:98, status:"Active",       grade:"A+", credits:128, fee_status:"Waived"  },
+      { student_id:1008, name:"Karthik Nair",       department:"Mathematics",         year:1, gpa:3.2,  attendance:80, status:"Active",       grade:"B",  credits:28,  fee_status:"Paid"    },
+      { student_id:1009, name:"Meera Reddy",        department:"Physics",             year:3, gpa:3.6,  attendance:84, status:"Active",       grade:"A",  credits:86,  fee_status:"Paid"    },
+      { student_id:1010, name:"Arjun Kapoor",       department:"Computer Science",    year:2, gpa:3.1,  attendance:77, status:"Active",       grade:"B",  credits:60,  fee_status:"Pending" },
+      { student_id:1011, name:"Divya Singh",        department:"Data Science",        year:4, gpa:3.85, attendance:93, status:"Active",       grade:"A+", credits:122, fee_status:"Paid"    },
+      { student_id:1012, name:"Nikhil Gupta",       department:"Mathematics",         year:2, gpa:2.7,  attendance:61, status:"On Probation", grade:"C",  credits:50,  fee_status:"Pending" },
+      { student_id:1013, name:"Tanvi Desai",        department:"Electronics",         year:3, gpa:3.4,  attendance:79, status:"Active",       grade:"B+", credits:84,  fee_status:"Paid"    },
+      { student_id:1014, name:"Rahul Bose",         department:"Mechanical Engg",     year:2, gpa:2.6,  attendance:63, status:"On Probation", grade:"C",  credits:46,  fee_status:"Pending" },
+      { student_id:1015, name:"Ishita Choudhary",   department:"Computer Science",    year:1, gpa:3.6,  attendance:89, status:"Active",       grade:"A",  credits:30,  fee_status:"Paid"    },
+      { student_id:1016, name:"Vikram Menon",       department:"Data Science",        year:3, gpa:3.3,  attendance:75, status:"Active",       grade:"B+", credits:82,  fee_status:"Paid"    },
+      { student_id:1017, name:"Pooja Krishnan",     department:"Chemistry",           year:4, gpa:3.75, attendance:90, status:"Active",       grade:"A",  credits:124, fee_status:"Waived"  },
+      { student_id:1018, name:"Saurabh Pandey",     department:"Physics",             year:1, gpa:2.5,  attendance:60, status:"On Probation", grade:"D",  credits:18,  fee_status:"Pending" },
+      { student_id:1019, name:"Lakshmi Varma",      department:"Mathematics",         year:3, gpa:3.95, attendance:97, status:"Active",       grade:"A+", credits:96,  fee_status:"Waived"  },
+      { student_id:1020, name:"Harsh Malhotra",     department:"Electronics",         year:2, gpa:3.0,  attendance:71, status:"Active",       grade:"B",  credits:56,  fee_status:"Paid"    },
+      { student_id:1021, name:"Nisha Agarwal",      department:"Computer Science",    year:4, gpa:3.65, attendance:88, status:"Active",       grade:"A",  credits:120, fee_status:"Paid"    },
+      { student_id:1022, name:"Gaurav Tiwari",      department:"Mechanical Engg",     year:3, gpa:2.8,  attendance:68, status:"On Probation", grade:"C",  credits:78,  fee_status:"Pending" },
+      { student_id:1023, name:"Aisha Siddiqui",     department:"Data Science",        year:1, gpa:3.5,  attendance:85, status:"Active",       grade:"B+", credits:26,  fee_status:"Paid"    },
+      { student_id:1024, name:"Rajesh Nambiar",     department:"Physics",             year:4, gpa:3.2,  attendance:74, status:"Active",       grade:"B",  credits:116, fee_status:"Paid"    },
+      { student_id:1025, name:"Shruti Banerjee",    department:"Chemistry",           year:2, gpa:3.8,  attendance:92, status:"Active",       grade:"A",  credits:68,  fee_status:"Paid"    },
+      { student_id:1026, name:"Mohit Saxena",       department:"Computer Science",    year:3, gpa:2.3,  attendance:55, status:"On Probation", grade:"D",  credits:72,  fee_status:"Pending" },
+      { student_id:1027, name:"Deepika Nair",       department:"Mathematics",         year:1, gpa:3.7,  attendance:93, status:"Active",       grade:"A",  credits:32,  fee_status:"Paid"    },
+      { student_id:1028, name:"Siddharth Rajan",    department:"Electronics",         year:4, gpa:3.55, attendance:83, status:"Active",       grade:"B+", credits:114, fee_status:"Waived"  },
+      { student_id:1029, name:"Kavya Subramaniam",  department:"Data Science",        year:2, gpa:4.0,  attendance:99, status:"Active",       grade:"A+", credits:70,  fee_status:"Waived"  },
+      { student_id:1030, name:"Abhinav Chatterjee", department:"Mechanical Engg",     year:1, gpa:3.1,  attendance:76, status:"Active",       grade:"B",  credits:24,  fee_status:"Paid"    },
+      { student_id:1031, name:"Prerna Dubey",       department:"Chemistry",           year:3, gpa:3.45, attendance:81, status:"Active",       grade:"B+", credits:90,  fee_status:"Paid"    },
+      { student_id:1032, name:"Yash Kulkarni",      department:"Physics",             year:2, gpa:2.2,  attendance:52, status:"On Probation", grade:"D",  credits:40,  fee_status:"Pending" },
+      { student_id:1033, name:"Simran Kaur",        department:"Computer Science",    year:4, gpa:3.9,  attendance:94, status:"Active",       grade:"A+", credits:126, fee_status:"Paid"    },
+      { student_id:1034, name:"Tushar Bhatt",       department:"Mathematics",         year:3, gpa:3.0,  attendance:70, status:"Active",       grade:"B",  credits:80,  fee_status:"Pending" },
+      { student_id:1035, name:"Swathi Pillai",      department:"Electronics",         year:1, gpa:3.8,  attendance:95, status:"Active",       grade:"A",  credits:34,  fee_status:"Paid"    },
+      { student_id:1036, name:"Aditya Mishra",      department:"Data Science",        year:3, gpa:2.6,  attendance:62, status:"On Probation", grade:"C",  credits:76,  fee_status:"Pending" },
+      { student_id:1037, name:"Harini Krishnaswamy",department:"Chemistry",           year:4, gpa:3.6,  attendance:87, status:"Active",       grade:"A",  credits:120, fee_status:"Paid"    },
+      { student_id:1038, name:"Kunal Shah",         department:"Mechanical Engg",     year:2, gpa:3.3,  attendance:78, status:"Active",       grade:"B+", credits:58,  fee_status:"Paid"    },
+      { student_id:1039, name:"Bhavna Tomar",       department:"Computer Science",    year:1, gpa:2.1,  attendance:48, status:"On Probation", grade:"F",  credits:12,  fee_status:"Pending" },
+      { student_id:1040, name:"Rohit Shetty",       department:"Physics",             year:4, gpa:3.4,  attendance:82, status:"Active",       grade:"B+", credits:112, fee_status:"Paid"    },
+      { student_id:1041, name:"Mansi Jain",         department:"Mathematics",         year:2, gpa:3.9,  attendance:96, status:"Active",       grade:"A+", credits:72,  fee_status:"Waived"  },
+      { student_id:1042, name:"Pranav Hegde",       department:"Electronics",         year:3, gpa:3.2,  attendance:73, status:"Active",       grade:"B",  credits:84,  fee_status:"Paid"    },
+      { student_id:1043, name:"Nandita Pillai",     department:"Data Science",        year:4, gpa:3.7,  attendance:89, status:"Active",       grade:"A",  credits:118, fee_status:"Paid"    },
+      { student_id:1044, name:"Sachin Dubey",       department:"Chemistry",           year:1, gpa:3.0,  attendance:74, status:"Active",       grade:"B",  credits:28,  fee_status:"Paid"    },
+      { student_id:1045, name:"Ankita Sharma",      department:"Mechanical Engg",     year:3, gpa:2.9,  attendance:66, status:"On Probation", grade:"C",  credits:82,  fee_status:"Pending" },
+      { student_id:1046, name:"Vivek Rao",          department:"Computer Science",    year:2, gpa:3.5,  attendance:86, status:"Active",       grade:"B+", credits:62,  fee_status:"Paid"    },
+      { student_id:1047, name:"Ritika Srivastava",  department:"Physics",             year:1, gpa:3.3,  attendance:81, status:"Active",       grade:"B+", credits:26,  fee_status:"Paid"    },
+      { student_id:1048, name:"Aryan Mehrotra",     department:"Mathematics",         year:4, gpa:2.5,  attendance:59, status:"On Probation", grade:"D",  credits:108, fee_status:"Pending" },
+      { student_id:1049, name:"Chandni Bhatia",     department:"Data Science",        year:3, gpa:3.85, attendance:92, status:"Active",       grade:"A+", credits:94,  fee_status:"Waived"  },
+      { student_id:1050, name:"Omkar Kulkarni",     department:"Electronics",         year:2, gpa:3.1,  attendance:76, status:"Active",       grade:"B",  credits:54,  fee_status:"Paid"    },
+    ];
+    alasql("CREATE TABLE students (student_id INT, name STRING, department STRING, year INT, gpa FLOAT, attendance INT, status STRING, grade STRING, credits INT, fee_status STRING)");
+    alasql.tables.students.data = STUDENTS;
+
+    /* ── CHEATSHEET DATA ── */
+    const CHEAT = [
+      {
+        kw: "SELECT",
+        desc: "Retrieve data",
+        note: "Fetch all columns (*) or specific ones from a table.",
+        snippets: [
+          { label: "All columns",  sql: "SELECT * FROM students;" },
+          { label: "Pick columns", sql: "SELECT name, gpa\nFROM students;" },
+        ]
+      },
+      {
+        kw: "WHERE",
+        desc: "Filter rows",
+        note: "Returns only rows where the condition is true. Use =, >, <, >=, <=, != to compare.",
+        snippets: [
+          { label: "Number filter", sql: "SELECT name, gpa\nFROM students\nWHERE gpa > 3.5;" },
+          { label: "Text match",    sql: "SELECT * FROM students\nWHERE department = 'Physics';" },
+        ]
+      },
+      {
+        kw: "AND / OR",
+        desc: "Combine conditions",
+        note: "AND: all conditions must be true. OR: at least one must be true.",
+        snippets: [
+          { label: "Using AND", sql: "SELECT name, gpa, attendance\nFROM students\nWHERE gpa < 3.0\nAND attendance < 70;" },
+          { label: "Using OR",  sql: "SELECT name, department\nFROM students\nWHERE department = 'Physics'\nOR department = 'Mathematics';" },
+        ]
+      },
+      {
+        kw: "ORDER BY",
+        desc: "Sort results",
+        note: "ASC = low to high (default). DESC = high to low.",
+        snippets: [
+          { label: "Highest GPA first",    sql: "SELECT name, gpa\nFROM students\nORDER BY gpa DESC;" },
+          { label: "Lowest attend. first", sql: "SELECT name, attendance\nFROM students\nORDER BY attendance ASC;" },
+        ]
+      },
+      {
+        kw: "LIMIT",
+        desc: "Cap row count",
+        note: "Restrict rows returned. Pair with ORDER BY for Top-N queries.",
+        snippets: [
+          { label: "Top 3 by GPA", sql: "SELECT name, gpa\nFROM students\nORDER BY gpa DESC\nLIMIT 3;" },
+        ]
+      },
+      {
+        kw: "LIKE",
+        desc: "Pattern search",
+        note: "% matches any characters. _ matches exactly one character.",
+        snippets: [
+          { label: "Starts with A",   sql: "SELECT name FROM students\nWHERE name LIKE 'A%';" },
+          { label: "Contains word",   sql: "SELECT name, department\nFROM students\nWHERE department LIKE '%Science%';" },
+        ]
+      },
+      {
+        kw: "Aggregates",
+        desc: "COUNT · AVG · MAX · MIN",
+        note: "Collapse many rows into one summary value.",
+        snippets: [
+          { label: "Class summary", sql: "SELECT\n  COUNT(*) AS total,\n  AVG(gpa) AS avg_gpa,\n  MAX(gpa) AS top_gpa,\n  MIN(attendance) AS lowest_att\nFROM students;" },
+        ]
+      },
+      {
+        kw: "GROUP BY",
+        desc: "Group & aggregate",
+        note: "Groups rows by a column, then aggregates each group.",
+        snippets: [
+          { label: "By department", sql: "SELECT department,\n  COUNT(*) AS count,\n  AVG(gpa) AS avg_gpa\nFROM students\nGROUP BY department\nORDER BY avg_gpa DESC;" },
+        ]
+      },
+      {
+        kw: "AS",
+        desc: "Alias / rename",
+        note: "Give a column or expression a friendlier name in results.",
+        snippets: [
+          { label: "Computed score", sql: "SELECT name,\n  ROUND((gpa * 25) +\n  (attendance * 0.25), 1)\n  AS performance_score\nFROM students\nORDER BY performance_score DESC;" },
+        ]
+      },
+    ];
+
+    /* ── CHEAT CARD component ── */
+    function CheatCard({ item, onLoad }) {
+      const [open, setOpen] = useState(false);
+      return (
+        <div className={`cheat-card${open ? ' open' : ''}`}>
+          <div className="cheat-trigger" onClick={() => setOpen(o => !o)}>
+            <div className="cheat-trigger-left">
+              <span className="kw-badge">{item.kw}</span>
+              <span className="cheat-desc">{item.desc}</span>
+            </div>
+            <i className="fa-solid fa-chevron-right cheat-arrow"></i>
+          </div>
+          <div className="cheat-body">
+            <p className="cheat-note">{item.note}</p>
+            {item.snippets.map((s, i) => (
+              <div
+                key={i}
+                className="cheat-snippet"
+                title={`Load: ${s.label}`}
+                onClick={() => onLoad(s.sql)}
+              >{s.sql}</div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    /* ── MAIN APP ── */
+    function App() {
+      const DEFAULT = "SELECT * FROM students;";
+
+      const [query,       setQuery]       = useState(DEFAULT);
+      const [rows,        setRows]        = useState([]);
+      const [error,       setError]       = useState(null);
+      const [runKey,      setRunKey]      = useState(0);
+      const [isDark,      setIsDark]      = useState(true);
+      const [sidebarW,    setSidebarW]    = useState(268);
+      const [isDragging,  setIsDragging]  = useState(false);
+
+      const taRef         = useRef(null);
+      const dragStartX    = useRef(0);
+      const dragStartW    = useRef(0);
+
+      /* apply theme to <html> */
+      useEffect(() => {
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      }, [isDark]);
+
+      /* initial query run */
+      useEffect(() => { execute(DEFAULT); }, []);
+
+      /* ── SQL execution ── */
+      function execute(q) {
+        try {
+          setError(null);
+          if (!q.trim().toLowerCase().startsWith("select"))
+            throw new Error("Only SELECT queries are allowed in this terminal.");
+          const result = alasql(q);
+          setRows(result);
+        } catch(e) {
+          setError(e.message);
+          setRows([]);
+        } finally {
+          setRunKey(k => k + 1);
+        }
+      }
+
+      function handleKeyDown(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { execute(query); return; }
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          const el = e.target, s = el.selectionStart, end = el.selectionEnd;
+          const next = query.substring(0, s) + '  ' + query.substring(end);
+          setQuery(next);
+          setTimeout(() => { el.selectionStart = el.selectionEnd = s + 2; }, 0);
+        }
+      }
+
+      function loadSnippet(sql) {
+        setQuery(sql);
+        execute(sql);
+        taRef.current && taRef.current.focus();
+      }
+
+      /* ── Theme toggle ── */
+      function toggleTheme() {
+        // subtle flash
+        const flash = document.getElementById('theme-flash');
+        flash.classList.add('active');
+        setTimeout(() => flash.classList.remove('active'), 180);
+        setIsDark(d => !d);
+      }
+
+      /* ── Sidebar resize ── */
+      function onResizeMouseDown(e) {
+        e.preventDefault();
+        dragStartX.current = e.clientX;
+        dragStartW.current = sidebarW;
+        setIsDragging(true);
+        document.body.classList.add('resizing');
+      }
+
+      useEffect(() => {
+        if (!isDragging) return;
+
+        function onMouseMove(e) {
+          const delta = e.clientX - dragStartX.current;
+          const newW  = Math.min(480, Math.max(180, dragStartW.current + delta));
+          setSidebarW(newW);
+        }
+        function onMouseUp() {
+          setIsDragging(false);
+          document.body.classList.remove('resizing');
+        }
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup',   onMouseUp);
+        return () => {
+          window.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener('mouseup',   onMouseUp);
+        };
+      }, [isDragging]);
+
+      /* ── Table helpers ── */
+      const headers = rows.length > 0 ? Object.keys(rows[0]) : [];
+
+      function cellClass(val) {
+        if (val === 'Active')        return 'is-active';
+        if (val === 'On Probation')  return 'is-probation';
+        if (val === 'Paid')          return 'is-paid';
+        if (val === 'Pending')       return 'is-pending';
+        if (val === 'Waived')        return 'is-waived';
+        if (typeof val === 'string' && (val === 'A+' || val === 'A')) return 'is-grade-a';
+        if (typeof val === 'string' && (val === 'B+' || val === 'B')) return 'is-grade-b';
+        if (typeof val === 'string' && val === 'C')                   return 'is-grade-c';
+        if (typeof val === 'string' && (val === 'D' || val === 'F'))  return 'is-grade-df';
+        if (typeof val === 'number') return 'is-num';
+        return 'is-str';
+      }
+
+      let bc = 'empty', bt = 'awaiting query';
+      if (error)            { bc = 'err'; bt = 'query error'; }
+      else if (rows.length) { bc = 'ok';  bt = `${rows.length} row${rows.length !== 1 ? 's' : ''} returned`; }
+
+      const lnCount  = (query.match(/\n/g) || []).length + 1;
+      const lineNums = Array.from({length: lnCount}, (_, i) => i + 1).join('\n');
+
+      /* ── RENDER ── */
+      return (
+        <div id="shell">
+          <div className="glow-tl"></div>
+          <div className="glow-br"></div>
+
+          {/* ── TOPBAR ── */}
+          <div id="topbar">
+            <div className="topbar-logo">
+              <div className="logo-icon">
+                <i className="fa-solid fa-database"></i>
+              </div>
+              <div className="logo-text">
+                Komal's <span>SQL Playground</span>
+              </div>
+            </div>
+
+            <div className="topbar-center">
+              <div className="status-pill">
+                <span className="dot-live"></span>
+                students_db · 12 records
+              </div>
+              <div className="status-pill">
+                <i className="fa-solid fa-lock" style={{color:'var(--pink-acc)', fontSize:'9px'}}></i>
+                read-only mode
+              </div>
+            </div>
+
+            <div className="topbar-right">
+              {/* Theme toggle */}
+              <button
+                className="theme-toggle"
+                onClick={toggleTheme}
+                title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                <i className={isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon'}></i>
+              </button>
+
+              {/* GitHub */}
+              <a
+                href="https://github.com/komal"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="gh-btn"
+              >
+                <i className="fa-brands fa-github" style={{fontSize:'14px'}}></i>
+                komal
+              </a>
+            </div>
+          </div>
+
+          {/* ── BODY ── */}
+          <div id="body">
+
+            {/* ── SIDEBAR ── */}
+            <div id="sidebar" style={{width: sidebarW + 'px'}}>
+              <div className="sidebar-head">
+                <h2>SQL Reference</h2>
+                <p>click a snippet → loads editor</p>
+              </div>
+              <div id="cheat-list">
+                {CHEAT.map((item, i) => (
+                  <CheatCard key={i} item={item} onLoad={loadSnippet} />
+                ))}
+              </div>
+              {/* drag handle */}
+              <div
+                id="resize-handle"
+                className={isDragging ? 'dragging' : ''}
+                onMouseDown={onResizeMouseDown}
+                title="Drag to resize"
+              ></div>
+            </div>
+
+            {/* ── MAIN ── */}
+            <div id="main">
+
+              {/* EDITOR */}
+              <div id="editor-panel" className="ws-panel" style={{display:'flex', flexDirection:'column'}}>
+                <div className="panel-bar">
+                  <div className="panel-bar-left">
+                    <div className="mac-dots">
+                      <span className="r"></span>
+                      <span className="y"></span>
+                      <span className="g"></span>
+                    </div>
+                    <span className="file-name">query.sql</span>
+                  </div>
+                  <button className="run-btn" onClick={() => execute(query)}>
+                    <i className="fa-solid fa-play" style={{fontSize:'9px'}}></i>
+                    Run
+                  </button>
+                </div>
+                <div className="editor-wrap">
+                  <div className="line-nums">{lineNums}</div>
+                  <textarea
+                    id="query-input"
+                    ref={taRef}
+                    value={query}
+                    onChange={e => setQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    spellCheck="false"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                  />
+                  <div className="editor-hint">ctrl + enter to run</div>
+                </div>
+              </div>
+
+              {/* RESULTS */}
+              <div id="results-panel" className="ws-panel">
+                <div className="results-bar panel-bar">
+                  <div className="results-label">
+                    <i className="fa-solid fa-table-cells-large" style={{fontSize:'12px'}}></i>
+                    Results
+                  </div>
+                  <span key={runKey} className={`row-badge ${bc} fade-up`}>{bt}</span>
+                </div>
+                <div id="results-body">
+                  {error ? (
+                    <div className="error-state">
+                      <i className="fa-solid fa-circle-exclamation"></i>
+                      <div className="error-msg">{error}</div>
+                    </div>
+                  ) : rows.length === 0 ? (
+                    <div className="empty-state">
+                      <i className="fa-regular fa-rectangle-list"></i>
+                      <span>no results · try running a query</span>
+                    </div>
+                  ) : (
+                    <table className="result-table">
+                      <thead>
+                        <tr>
+                          {headers.map((h, i) => (
+                            <th key={i}>{h.replace(/_/g, ' ')}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.map((row, ri) => (
+                          <tr key={ri}>
+                            {headers.map((h, ci) => {
+                              const val = row[h];
+                              return (
+                                <td key={ci} className={cellClass(val)}>
+                                  {val ?? '—'}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+
+            </div>{/* /main */}
+          </div>{/* /body */}
+
+          {/* ── BOTTOM STRIP ── */}
+          <div id="bottom">
+            <span>table: students · student_id, name, department, year, gpa, attendance, status, grade, credits, fee_status</span>
+            <span className="credit">Built by Komal · SQL Learning Terminal</span>
+            <span>read-only · v2.0</span>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
